@@ -1,7 +1,7 @@
 /*
  * llist.h
  *
- *  Created on: 2018Äê5ÔÂ11ÈÕ
+ *  Created on: 11 May, 2018
  *      Author: kongdd
  */
 

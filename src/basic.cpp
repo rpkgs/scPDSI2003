@@ -1,11 +1,18 @@
 /*
  * basic.cpp
  *
- *  Created on: 2018Äê5ÔÂ11ÈÕ
+ *  Created on: 2018Ã„Ãª5Ã”Ã‚11ÃˆÃ•
  *      Author: kongdd
  */
 
 #include <basic.h>
+
+#include <cstring>
+#include <stdlib.h>
+//#include <boost/filesystem.hpp>
+
+#include <direct.h>
+
 
 //-----------------------------------------------------------------------------
 //The numEntries() function returns the number of entries in the file
@@ -128,70 +135,29 @@ int dir_exists(char * dir) {
 //Returns 1 if the directory already exists.
 //-----------------------------------------------------------------------------
 int create_dir(char * path) {
-    //---------------------------------------------------------------------------
-    //unix version
-    //---------------------------------------------------------------------------
     unsigned int i = 0;
-    char my_path[256];
-    char dir[256];
-    char command[270];
     int return_value = 1;
 
-    //make sure the last letter of the directory
-    //is a slash (/).
-    strcpy(my_path, path);
-    if (path[strlen(path) - 1] != '/')
-        strcat(my_path, "/");
+	/** WINDOWS version */
+	char my_path[128];
+	char dir[128];
 
-    while (i < strlen(my_path)) {
-        dir[i] = my_path[i];
-        if (my_path[i] == '/') {
-            dir[i + 1] = '\0';
-            //check to see if this directory exists
-            if (dir_exists(dir) == -1) {
-                return_value = 0;
-                //create directory
-                sprintf(command, "mkdir %s", dir);
-                system(command);
-                if (dir_exists(dir) == -1)
-                    return -1;
-            }
-        }
+	//make sure the last letter of the directory is a slash (/).
+	strcpy(my_path, path);
+	if (path[strlen(path) - 1] != '/') strcat(my_path, "/");
 
-        i++;
-    }
+	while (i < strlen(my_path)) {
+		dir[i] = my_path[i];
+		if (my_path[i] == '/') {
+			dir[i + 1] = '\0';
+			//check to see if this directory exists
+			if (dir_exists(dir) == -1) {
+				return_value = 0;
+				if (_mkdir(dir) != 0) return -1;
+			}
+		}
+		i++;
+	}
+
     return return_value;
-    //---------------------------------------------------------------------------
-    //Windows Version
-    //---------------------------------------------------------------------------
-    /*
-  unsigned int i = 0;
-  char my_path[128];
-  char dir[128];
-  int return_value = 1;
-
-  //make sure the last letter of the directory
-  //is a slash (/).
-  strcpy(my_path,path);
-  if(path[strlen(path)-1] != '/')
-    strcat(my_path,"/");
-
-  while(i < strlen(my_path)){
-    dir[i] = my_path[i];
-    if(my_path[i] == '/'){
-      dir[i+1] = '\0';
-      //check to see if this directory exists
-      if(dir_exists(dir) == -1){
-    return_value = 0;
-    if(_mkdir(dir)!=0)
-      return -1;
-      }
-    }
-
-    i++;
-  }
-
-  return return_value;
-  */
-    //---------------------------------------------------------------------------
 }

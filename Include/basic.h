@@ -1,7 +1,7 @@
 /*
  * basic.h
  *
- *  Created on: 2018Äê5ÔÂ11ÈÕ
+ *  Created on: 11 May, 2018
  *      Author: kongdd
  */
 
@@ -9,11 +9,6 @@
 #define BASIC_H_
 
 #include <stdio.h>
-#include <cstring>
-#include <stdlib.h>
-#include <direct.h>
-
-
 typedef double number;
 
 int numEntries(FILE *in);

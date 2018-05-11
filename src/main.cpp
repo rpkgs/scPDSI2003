@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : hello.cpp
+// Name        : main.cpp
 // Author      : 
 // Version     :
 // Copyright   : Your copyright notice
@@ -8,6 +8,14 @@
 
 #include <iostream>
 #include <scPDSI.h>
+#include <stdio.h>  /* defines FILENAME_MAX */
+#ifdef WINDOWS
+    #include <direct.h>
+    #define GetCurrentDir _getcwd
+#else
+    #include <unistd.h>
+    #define GetCurrentDir getcwd
+#endif
 
 using namespace std;
 
@@ -20,6 +28,12 @@ using namespace std;
 //-----------------------------------------------------------------------------
 int main(int argc,char *argv[]) {
 	cout << "!!!Hello World!!!" << endl; // prints !!!Hello World!!!
+
+	char cCurrentPath[FILENAME_MAX];
+
+	GetCurrentDir(cCurrentPath, sizeof(cCurrentPath));
+	cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; /* not really required */
+	printf ("The current working directory is %s\n", cCurrentPath);
 
 	pdsi PDSI;
 	PDSI.set_flags(argc, argv); // Sets the flags of PDSI

@@ -1,7 +1,7 @@
 /*
  * scPDSI.h
  *
- *  Created on: 2018Äê5ÔÂ11ÈÕ
+ *  Created on: 11 May, 2018
  *      Author: kongdd
  */
 
@@ -126,7 +126,6 @@ class pdsi {
     int nEndPeriodsToSkip;
     int nCalibrationPeriods;
     /* SG 6/5/06: End adding variables to allow user-defined calibration intervals */
-
 
     // Various constants used in calculations
     number TLA; // The negative tangent of latitude is used in calculating PE
@@ -278,7 +277,6 @@ class pdsi {
     void CalcCMI();
     void WriteCMI(char * dir);
     void MoveCMIFiles(char * dir);
-
 
     // This function backtracks through the X values
     // and replaces them with the appropriate value of X1 or X2

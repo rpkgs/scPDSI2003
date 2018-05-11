@@ -1,7 +1,7 @@
 
 ## scPDSI
 
-This repository try to replace ET modula with Penman Evapotranspiration.
+This repository try to replace ET module with Penman Evapotranspiration.
 
 
 

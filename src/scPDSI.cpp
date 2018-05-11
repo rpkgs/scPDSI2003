@@ -15,15 +15,13 @@ typedef int flag;
 #define min(a,b) ((a) < (b) ? (a) : (b));
 #define MISSING -99.00
 
-//-----------------------------------------------------------------------------
-//**********   START OF FUNCTION DEFINITIONS FOR CLASS:  llist        *********
-//-----------------------------------------------------------------------------
-// The pdsi constructor sets all flags to default, scans the temperature file
-// to get the starting and ending years of the data, and reads in the values
-// from the parameter file.
-//-----------------------------------------------------------------------------
-pdsi::pdsi() {
-    strcpy(input_dir, "./");
+/**
+ * The pdsi constructor sets all flags to default, scans the temperature file
+ * to get the starting and ending years of the data, and reads in the values
+ * from the parameter file.
+ */
+pdsi::pdsi() { // @suppress("Class members should be properly initialized")
+    strcpy(input_dir, "example/");
     strcpy(output_dir, "./");
 
     //set several parameters to their defaults
@@ -38,11 +36,10 @@ pdsi::pdsi() {
     setCalibrationStartYear = 0;
     setCalibrationEndYear = 0;
 }
-//-----------------------------------------------------------------------------
-// The destructor deletes the temporary files used in storing various items
-//-----------------------------------------------------------------------------
+
+/** The destructor deletes the temporary files used in storing various items */
 pdsi::~pdsi() {
-    if (extra != 3 && extra != 9) {
+	if (extra != 3 && extra != 9) {
         remove("potentials"); // Used for storing potential values for later use
         remove("dvalue"); // Used to store the d values for use after summing them
     }
@@ -50,15 +47,17 @@ pdsi::~pdsi() {
     if (verbose > 0)
         printf("Calculations Complete\n");
 }
-//-----------------------------------------------------------------------------
-// The check_input function will check to make sure there is enough data in
-// file represented by the file pointer in.  The basic requirement is that
-// there should be 25 years of data, which means 300 months or 1300 weeks that
-// are not MISSING.
-// returns -1 if the file doesn't exist (in == NULL)
-// returns 0 if the file doesn't have enough data
-// reutrns 1 if the file is okay
-//-----------------------------------------------------------------------------
+/**
+ * Check to make sure there is enough data in file represented by the file pointer in. 
+ * 
+ * The basic requirement is that there should be 25 years of data, which means 
+ * 300 months or 1300 weeks that are not MISSING.
+ * 
+ * @return {int} 
+ * -1: if the file doesn't exist (in == NULL)
+ *  0: if the file doesn't have enough data
+ *  1: if the file is okay
+ */
 int pdsi::check_input(FILE * in ) {
     float temp;
     int count = 0;
@@ -76,13 +75,18 @@ int pdsi::check_input(FILE * in ) {
     int flag = count >= (min_years * nptperyear);
     return flag;
 }
-//-----------------------------------------------------------------------------
-// The initialize function clears all arrays and linked lists.
-// it also checks to make sure all the necessary input files exist.
-// returns 1 if they do, and -1 if they do not.
-// returns 0 if there is too much missing data.
-//  -- there should be 25 years worth of data. (300 months or 1300 weeks)
-//-----------------------------------------------------------------------------
+
+/**
+ * Initialize to clears all arrays and linked lists.
+ *
+ * It also checks to make sure all the necessary input files exist.
+ *
+ * @return {int}
+ * returns 1 if they do, and -1 if they do not.
+ * returns 0 if there is too much missing data.
+ *
+ * -- there should be 25 years worth of data. (300 months or 1300 weeks)
+ */
 int pdsi::initialize() {
     char filename[170], base[170];
     FILE * test;
@@ -113,6 +117,7 @@ int pdsi::initialize() {
         strcpy(base, input_dir);
     else
         strcpy(base, "./");
+
     if (Weekly) {
         strcpy(filename, base);
         strcat(filename, "wk_T_normal");
@@ -771,15 +776,14 @@ void pdsi::WeeklyCMI() {
 
     /* SG 6/5/06: The WeeklyCMI does not (yet) support a calibration interval, so clear the vars */
     currentCalibrationStartYear = startyear;
-    currentCalibrationEndYear = endyear;
-    nEndYearsToSkip = 0;
-    nStartYearsToSkip = 0;
-    nCalibrationYears = totalyears;
-    nStartPeriodsToSkip = 0;
-    nEndPeriodsToSkip = 0;
-    nCalibrationPeriods = nCalibrationYears * num_of_periods;
+    currentCalibrationEndYear   = endyear;
+    nEndYearsToSkip             = 0;
+    nStartYearsToSkip           = 0;
+    nCalibrationYears           = totalyears;
+    nStartPeriodsToSkip         = 0;
+    nEndPeriodsToSkip           = 0;
+    nCalibrationPeriods         = nCalibrationYears * num_of_periods;
     /* SG 6/5/06: end addition */
-
 
     Weekly = true;
     Monthly = false;
@@ -838,9 +842,7 @@ void pdsi::WeeklyCMI() {
 
     // CalcWBCoef is then called to calculate alpha, beta, gamma, and delta
     CalcWBCoef();
-
     CalcCMI();
-
 }
 //-----------------------------------------------------------------------------
 // WeeklyPDSI calls all functions necessary to compute the final PDSI.  This is
@@ -963,6 +965,7 @@ void pdsi::WeeklyPDSI() {
         }
     }
 } //end of WeeklyPDSI()
+
 void pdsi::WeeklyPDSI(int length) {
     period_length = length;
     switch (period_length) {
@@ -998,7 +1001,6 @@ void pdsi::WeeklyPDSI(int length) {
     nEndPeriodsToSkip = nEndYearsToSkip * num_of_periods;
     nCalibrationPeriods = nCalibrationYears * num_of_periods;
     /* SG 6/5/06: end addition */
-
 
     //call WeeklyPDSI();
     WeeklyPDSI();
@@ -1089,7 +1091,6 @@ void pdsi::MonthlyPDSI() {
     // Finally CalcK is called to compute the K and Z values.  CalcX is called
     // within CalcK.
     CalcOrigK();
-
 }
 //-----------------------------------------------------------------------------
 // SCMonthlyPDSI calls all functions necessary to compute the final PDSI.  This is
@@ -1121,13 +1122,13 @@ void pdsi::SCMonthlyPDSI() {
 
     /* num_of_periods is set in pdsi constructor and reset in here with the number of periods in a year */
     currentCalibrationStartYear = calibrationStartYear;
-    currentCalibrationEndYear = calibrationEndYear;
-    nCalibrationYears = currentCalibrationEndYear - currentCalibrationStartYear + 1;
-    nStartYearsToSkip = currentCalibrationStartYear - startyear;
-    nEndYearsToSkip = endyear - currentCalibrationEndYear;
-    nStartPeriodsToSkip = nStartYearsToSkip * num_of_periods;
-    nEndPeriodsToSkip = nEndYearsToSkip * num_of_periods;
-    nCalibrationPeriods = nCalibrationYears * num_of_periods;
+    currentCalibrationEndYear   = calibrationEndYear;
+    nCalibrationYears           = currentCalibrationEndYear - currentCalibrationStartYear + 1;
+    nStartYearsToSkip           = currentCalibrationStartYear - startyear;
+    nEndYearsToSkip             = endyear - currentCalibrationEndYear;
+    nStartPeriodsToSkip         = nStartYearsToSkip * num_of_periods;
+    nEndPeriodsToSkip           = nEndYearsToSkip * num_of_periods;
+    nCalibrationPeriods         = nCalibrationYears * num_of_periods;
 
     if (verbose > 1) { /* output calibration interval vars if max verbose is set */
         printf("\nstartyear = %d\n", startyear);
@@ -1316,7 +1317,6 @@ int pdsi::GetTemp(FILE * In, number * A, int max) {
     }
 
     return year;
-
 }
 //-----------------------------------------------------------------------------
 // This function is a modified version of GetTemp() function for precip only.
@@ -1381,9 +1381,8 @@ int pdsi::GetPrecip(FILE * In, number * A, int max) {
 
     return year;
 }
-//-----------------------------------------------------------------------------
-// This function reads in the 2 initializing values of Su and TLA
-//-----------------------------------------------------------------------------
+
+/** Read the 2 initializing parameter: Su and TLA */
 void pdsi::GetParam(FILE * Param) {
     float scn1, scn2;
     double lat;
@@ -1445,7 +1444,7 @@ void pdsi::GetParam(FILE * Param) {
         printf("HEAT INDEX, THORNTHWAITE A: %14.5f %11.5f\n", I, A);
     }
 }
-//-----------------------------------------------------------------------------
+
 //-----------------------------------------------------------------------------
 void pdsi::CalcWkPE(int period, int year) {
     number Phi[52] = {-.39796983, -.38279708, -.36154002, -.33468535, -.30281503, -.26657407, -.22664177, -.18370885, -.13846106, -.09156812, -.04368365, 0.00456585, .05256951, .09973421, .14548036, .18923931, .23045239, .26857222, .30306721, .33342965, .35918741, .37991898, .39527047, .40497267, .40885593, .40686015, .3990384, .38555316, .36666599, .34272229, .31413363, .28136006, .24489444, .20524994, .16295153, .11853109, .0725259, .02547986, -.02205355, -.06950714, -.11629575, -.16181268, -.20542804, -.24649005, -.28433068, -.31827697, -.3476688, -.37188342, -.3903656, -.40266061, -.40844587, -.40755601 };
@@ -1460,13 +1459,8 @@ void pdsi::CalcWkPE(int period, int year) {
     number adjusted_Phi[52];
     number temp;
     int i, j;
-    int offset;
-    if (south) {
-        offset = 26;
-    } else
-        offset = 0;
-
-
+    int offset = south ? 26 : 0;
+    
     //need to average Phi[] into an array of num_of_period elements
     //if calculated in southern hemisphere, this will also shift
     //the values by 6 months worth to make up for the opposite seasons.
@@ -1495,16 +1489,13 @@ void pdsi::CalcWkPE(int period, int year) {
     }
     PE = PE * period_length * 7;
 }
+
 void pdsi::CalcMonPE(int month, int year) {
     number Phi[] = {-.3865982, -.2316132, -.0378180, .1715539, .3458803, .4308320, .3916645, .2452467, .0535511, -.15583436, -.3340551, -.4310691 };
     //these values of Phi[] come directly from the fortran program.
     int Days[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     number Dum, Dk;
-    int offset;
-    if (south)
-        offset = 6;
-    else
-        offset = 0;
+    int offset = south ? 6 : 0;
 
     if (T[month] <= 32)
         PE = 0;
@@ -1594,7 +1585,7 @@ number pdsi::CalcWkThornI() {
     fscanf(fin, "%f %f %f %f", & t[48], & t[49], & t[50], & t[51]);
     //check to make sure the file only has 52 entries
     if (fscanf(fin, "%f", & t[53]) != EOF) {
-        printf("Warning: Normal Temperature file, %s, is the wrong format.\n");
+        printf("Warning: Normal Temperature file, %s, is the wrong format.\n", filename);
         printf("         Results may not be accurate.\n");
     }
 
@@ -1606,8 +1597,7 @@ number pdsi::CalcWkThornI() {
             TNorm[i] = t[i];
 
         // Prints the normal temperatures to the screen
-        if (verbose > 1)
-            printf(" %.2f", TNorm[i]);
+        if (verbose > 1) printf(" %.2f", TNorm[i]);
         // Adds the modified temp to heat if the temp is above freezing
         if (TNorm[i] > 32)
             I = I + pow((TNorm[i] - 32) / 9, 1.514);
@@ -1621,8 +1611,7 @@ number pdsi::CalcWkThornI() {
         exit(1);
     }
     // Prints a newline to the screen and closes the input file
-    if (verbose > 1)
-        printf("\n");
+    if (verbose > 1) printf("\n");
     fclose(fin);
     //adjust I for weeks by mult by (12/52) and return
     return (I / 52 * 12);
@@ -1684,8 +1673,7 @@ number pdsi::CalcMonThornI() {
             I = I + pow((TNorm[i] - 32) / 9, 1.514);
     }
     // Prints a newline to the screen and closes the input file
-    if (verbose > 1)
-        printf("\n");
+    if (verbose > 1) printf("\n");
     fclose(fin);
     return I;
 }
@@ -1784,7 +1772,6 @@ void pdsi::Calcd() {
                 else
                     D_sum[per] += d;
 
-
                 // The statistical values are updated
                 DSAct[per] += d;
                 DSSqr[per] += d * d;
@@ -1827,7 +1814,6 @@ void pdsi::CalcK() {
     number sums; //used to calc k
 
     // Calculate k, which is K', or Palmer's second approximation of K
-
     for (int per = 0; per < num_of_periods; per++) {
         if (PSum[per] + LSum[per] == 0)
             sums = 0; //prevent div by 0
@@ -1885,7 +1871,6 @@ void pdsi::CalcOrigK() {
     }
     wetm = drym;
     wetb = dryb;
-
 
     // Initializes the book keeping indices used in finding the PDSI
     Prob = 0.0;
@@ -2058,7 +2043,6 @@ void pdsi::Calibrate() {
         wet_ratio = (cal_range / Xlist.safe_percentile(0.98));
     }
 
-
     if (verbose > 1) {
         printf("adjusting Z-index using:\n");
         printf("dry ratio = %.2f/", -cal_range);
@@ -2079,7 +2063,6 @@ void pdsi::Calibrate() {
         tempZ.insert(Z);
     }
     copy(ZIND, tempZ);
-
     CalcX();
 } //end of calibrate()
 
@@ -2177,7 +2160,6 @@ void pdsi::CalcOneX(FILE * table, int period_number, int year) {
         b = dryb;
     }
     c = 1 - (m / (m + b));
-
 
     if (Z != MISSING) {
         // This sets the wd flag by looking at X3
@@ -2300,7 +2282,6 @@ void pdsi::SumAll() {
     }
 
     if (Weekly) {
-
         if (strlen(input_dir) > 1) {
             sprintf(Temp, "%s%s", input_dir, "weekly_T");
             sprintf(Precip, "%s%s", input_dir, "weekly_P");
@@ -2487,8 +2468,7 @@ void pdsi::CalcCMI() {
     // (they were changed when SumAll was run to calc Alpha)
     Ss = 1;
     Su = AWC - Ss;
-    if (Su < 0)
-        Su = 0;
+    if (Su < 0) Su = 0;
 
     // Initializes the sums to 0;
     for (int i = 0; i < 52; i++) {
@@ -2726,7 +2706,6 @@ void pdsi::CalcActual(int per) {
 // If the user desires, the results are output to the screen and a file.
 //-----------------------------------------------------------------------------
 void pdsi::CalcWBCoef() {
-
     FILE * wb;
 
     // The coefficients are calculated by per
@@ -2830,6 +2809,7 @@ void pdsi::Write(char * directory) {
     }
 
     strcpy(my_dir, directory);
+
     //make sure last character of directory is '/'
     if (my_dir[strlen(my_dir) - 1] != '/')
         strcat(my_dir, "/");
@@ -2840,6 +2820,7 @@ void pdsi::Write(char * directory) {
         strcpy(base, "./");
 
     sprintf(full_path, "%s%s", base, my_dir);
+    
     switch (create_dir(full_path)) {
         case -1:
             //the directory was not created
@@ -2918,7 +2899,7 @@ void pdsi::WriteCMI(char * dir) {
 
         //check to make sure there is not missing values
         //by making sure the data is continuous
-        if ((prev == 0 && cur == 1) || cur == prev + period_length || cur == 1 && ((Weekly && prev == (52 - period_length + 1)) || ((Monthly || SCMonthly) && prev == (12 - period_length + 1)))) {
+        if ((prev == 0 && cur == 1) || cur == prev + period_length || (cur == 1 && ((Weekly && prev == (52 - period_length + 1)) || ((Monthly || SCMonthly) && prev == (12 - period_length + 1))))) {
             change_per = 1;
 
             c = tempCMI.tail_remove();
@@ -3038,7 +3019,7 @@ void pdsi::FinalWrite(char * dir) {
 
         //check to make sure there is not missing values
         //by making sure the data is continuous
-        if ((prev == 0 && cur == 1) || cur == prev + period_length || cur == 1 && ((Weekly && prev == (52 - period_length + 1)) || ((Monthly || SCMonthly) && prev == (12 - period_length + 1)))) {
+        if ((prev == 0 && cur == 1) || cur == prev + period_length || (cur == 1 && ((Weekly && prev == (52 - period_length + 1)) || ((Monthly || SCMonthly) && prev == (12 - period_length + 1))))) {
             change_per = 1;
             // The last item in the linked list is removed and set to the
             // corresponding variable for calculation of the PHDI and WPLM
@@ -3112,7 +3093,7 @@ void pdsi::FinalWrite(char * dir) {
             fprintf(wplm0, "%7.2f", wp);
         }
 
-        if (Weekly && cur >= 52 - period_length + 1 || (Monthly || SCMonthly) && cur >= 12 - period_length + 1) {
+        if ((Weekly && (cur >= 52 - period_length + 1)) || ((Monthly || SCMonthly) && (cur >= 12 - period_length + 1))) {
             // Outputs a newline after a years worth of data in the table files
             if ((output_mode == 0 || output_mode == 2) && cyear >= s_year) {
                 fprintf(pdsi0, "\n");
@@ -3601,8 +3582,7 @@ void pdsi::LeastSquares(int * x, number * y, int n, int sign, number & slope, nu
     slope = SSXY / SSX;
 
     n = i + 1;
-    i = 0;
-    for (i; i < n; i++) {
+    for (i = 0; i < n; i++) {
         if (sign * (y[i] - slope * x[i]) > sign * max_diff) {
             max_diff = y[i] - slope * x[i];
             max_i = i;
