@@ -1180,7 +1180,7 @@ void pdsi::SCMonthlyPDSI() {
     }
     for (i = 0; i < num_of_periods; i++) {
         /* DEPSum will only include calibration interval data since the ET, R, PE, and RO
-         ** sum variables only include data from the calibration interval.
+         * sum variables only include data from the calibration interval.
          */
         DEPSum[i] = ETSum[i] + RSum[i] - PESum[i] + ROSum[i];
         if (verbose > 1) {
@@ -1194,14 +1194,14 @@ void pdsi::SCMonthlyPDSI() {
 
     // CalcWBCoef is then called to calculate alpha, beta, gamma, and delta
     /* These variables will only include calibration interval data since the other
-     ** sum variables only include data from the calibration interval--set in SumALL().
+     * sum variables only include data from the calibration interval--set in SumALL().
      */
     CalcWBCoef();
     // Next Calcd is called to calculate the monthly departures from normal
     Calcd();
     // CalcK is called to compute the K values
     /* These variables will only include calibration interval data since the other
-     ** sum variables only include data from the calibration interval--set in SumALL().
+     * sum variables only include data from the calibration interval--set in SumALL().
      */
     CalcK();
     // CalcZ is called to compute the Z index
@@ -2274,7 +2274,6 @@ void pdsi::SumAll() {
 
     // Opens the temperature and precipitation files for reading the input and
     // potentials file for temparary storage.
-
     if ((fout = fopen("potentials", "w")) == NULL) {
         if (verbose > 0)
             printf("Error in opening temporary storage file for potentials.\n");
@@ -2365,8 +2364,10 @@ void pdsi::SumAll() {
                     CalcWkPE(per, actyear);
                 else
                     CalcMonPE(per, actyear);
+                // If need to replace PET with penman_PET, just add a PET data
+                // input file here. Dong, 20180512
 
-                CalcPR(); // calculate Potential Recharge, Potential Runoff,
+                CalcPR();  // calculate Potential Recharge, Potential Runoff,
                 CalcPRO(); // and Potential Loss
                 CalcPL();
                 CalcActual(per); // Calculate Evapotranspiration, Recharge, Runoff,
@@ -2406,13 +2407,13 @@ void pdsi::SumAll() {
 
                         // Update the sums by adding the current water balance values
                         ETSum[per] += ET;
-                        RSum[per] += R;
+                        RSum[per]  += R;
                         ROSum[per] += RO;
-                        LSum[per] += L;
-                        PSum[per] += P[per];
+                        LSum[per]  += L;
+                        PSum[per]  += P[per];
                         PESum[per] += PE;
                         PRSum[per] += PR;
-                        PROSum[per] += PRO;
+                        PROSum[per]+= PRO;
                         PLSum[per] += PL;
                     }
                 }
@@ -2438,8 +2439,8 @@ void pdsi::SumAll() {
     fclose(input_prec);
 }
 //-----------------------------------------------------------------------------
-//CalcCMI is a lot like SumAll
-//Equations used come from a Memorandum dated March 29, 1968
+// CalcCMI is a lot like SumAll
+// Equations used come from a Memorandum dated March 29, 1968
 // from: H. B. Harshbarger, Director, Office of Field Services,
 //                          Environmental Data Service,
 //                          Environmental Science Services Administation
@@ -2585,7 +2586,6 @@ void pdsi::CalcCMI() {
             fprintf(fout, "%7.4f %7.4f %7.4f %7.4f %7.4f\n",
                 Yprime, Y, H, G, CMI);
 
-
         } //end of period loop
     } //end of year loop
 
@@ -2599,18 +2599,14 @@ void pdsi::CalcCMI() {
 // year being examined.  PR = Soils Max Capacity - Soils Current Capacity or
 // AWC - (SU + Ss)
 //-----------------------------------------------------------------------------
-void pdsi::CalcPR() {
-    PR = AWC - (Su + Ss);
-}
+void pdsi::CalcPR() { PR = AWC - (Su + Ss); }
 //-----------------------------------------------------------------------------
 // CalcPRO calculates the Potential Runoff for a given period of the year being
 // examined.  PRO = Potential Precip - PR. Palmer arbitrarily set the Potential
 // Precip to the AWC making PRO = AWC - (AWC - (Su + Ss)). This then simplifies
 // to PRO = Su + Ss
 //-----------------------------------------------------------------------------
-void pdsi::CalcPRO() {
-    PRO = Ss + Su;
-}
+void pdsi::CalcPRO() { PRO = Ss + Su; }
 //-----------------------------------------------------------------------------
 // CalcPL calculates the Potential Loss of moisture in the soil for a period of
 // one period of the year being examined. If the Ss capacity is enough to
@@ -2633,17 +2629,16 @@ void pdsi::CalcPL() {
 //-----------------------------------------------------------------------------
 void pdsi::CalcActual(int per) {
     number R_surface = 0.0; // recharge of the surface layer
-    number R_under = 0.0; // recharge of the underlying layer
+    number R_under   = 0.0; // recharge of the underlying layer
     number surface_L = 0.0; // loss from surface layer
-    number under_L = 0.0; // loss from underlying layer
+    number under_L   = 0.0; // loss from underlying layer
     number new_Su, new_Ss; // new soil moisture values
-
 
     if (P[per] >= PE) {
         // The precipitation exceeded the maximum possible evapotranspiration
         // (excess moisture)
         ET = PE; // Enough moisture for all potential evapotranspiration to occur
-        L = 0.0; // with no actual loss of soil moisture
+        L  = 0.0; // with no actual loss of soil moisture
 
         if ((P[per] - PE) > (1.0 - Ss)) {
             // The excess precip will recharge both layers. Note: (1.0 - SS) is the
@@ -2707,7 +2702,6 @@ void pdsi::CalcActual(int per) {
 //-----------------------------------------------------------------------------
 void pdsi::CalcWBCoef() {
     FILE * wb;
-
     // The coefficients are calculated by per
     for (int per = 0; per < num_of_periods; per++) {
 
@@ -2771,20 +2765,16 @@ void pdsi::Write() {
                 printf("No PDSI or CMI values have been calculated.\n");
             return;
         } else {
-            Write((char * )
-                "weekly/CMI/");
+            Write((char * ) "weekly/CMI/");
         }
     }
     if (Weekly) {
         sprintf(full_path, "weekly/%d/", period_length);
         Write(full_path);
     } else if (Monthly)
-        Write((char * )
-            "monthly/original");
+        Write((char * ) "monthly/original");
     else if (SCMonthly)
-        Write((char * )
-            "monthly/self_cal");
-
+        Write((char * ) "monthly/self_cal");
 }
 //-----------------------------------------------------------------------------
 // The Write(char* directory) function will write the PDSI to the specified
@@ -2795,7 +2785,6 @@ void pdsi::Write() {
 // be treated as a relative path to the current directory.
 //-----------------------------------------------------------------------------
 void pdsi::Write(char * directory) {
-
     unsigned int i = 0;
     int e = 0; //error flag
     char base[128]; //string for base dir path
@@ -3382,7 +3371,6 @@ void pdsi::CalcDurFact(number & slope, number & intercept, int sign) {
         length[8] = 42;
         length[9] = 48;
     }
-
 
     for (i = 0; i < num_list; i++) {
         sum[i] = get_Z_sum(length[i], sign);
