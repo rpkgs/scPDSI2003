@@ -35,3 +35,4 @@
 weekly
 monthly
 *.xml
+/Debug/
