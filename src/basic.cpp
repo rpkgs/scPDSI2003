@@ -161,3 +161,10 @@ int create_dir(char * path) {
 
     return return_value;
 }
+
+//std::string repeat(const std::string& input, int n) {
+//    std::ostringstream os;
+//    for(int i = 0; i < n; i++)
+//        os << input;
+//    return os.str();
+//};

@@ -139,7 +139,7 @@ class pdsi {
     number TNorm[52];
     number T[52];
     number P[52];
-
+    number PET[52];  // store input pet data
     // These variables are used in calculation to store the current period's
     // potential and actual water balance variables as well as the soil
     // moisture levels
@@ -247,11 +247,15 @@ class pdsi {
     int check_input(FILE * in );
 
     // These functions read in the input files
-    int GetTemp(FILE * In, number * A, int max); // Gets the Temp
+    int GetData(FILE * In, number * A, int max, const char * dtype);
+    int GetTemp(FILE * In, number * A, int max);   // Gets the Temp
     int GetPrecip(FILE * In, number * A, int max); // Gets the Precip
     void GetParam(FILE * Param); // Gets Paramaters Su and TLA
 
     // These functions calculate the Potentials needed
+    void CalcPET();
+    void CalcWkPE_penman(int period, int year);
+	void CalcMonPE_penman(int month, int year);
     // Calculates Potential Evapotranspiration from Thornthwaite
     void CalcWkPE(int period, int year);
     void CalcMonPE(int month, int year);

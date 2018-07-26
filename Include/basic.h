@@ -9,6 +9,8 @@
 #define BASIC_H_
 
 #include <stdio.h>
+//#include <sstream>
+
 typedef double number;
 
 int numEntries(FILE *in);
@@ -18,5 +20,6 @@ void exch(number &x, number &y);
 int dir_exists(char *dir);
 int create_dir(char *path);
 
+//std::string repeat(const std::string& input, int n);
 
 #endif /* BASIC_H_ */

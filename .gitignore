@@ -36,3 +36,4 @@ weekly
 monthly
 *.xml
 /Debug/
+/Release/

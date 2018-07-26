@@ -21,7 +21,7 @@ typedef int flag;
  * from the parameter file.
  */
 pdsi::pdsi() { // @suppress("Class members should be properly initialized")
-    strcpy(input_dir, "example/");
+    strcpy(input_dir, "data/example/");
     strcpy(output_dir, "./");
 
     //set several parameters to their defaults
@@ -593,7 +593,7 @@ void pdsi::set_flags(int num_flags, char * flags[]) {
             }
         }
     } // End for(int i=1; i<argc; i++) -->done checking all flags
-
+    
     // check input_dir and output_dir for correct format
     //make sure last character is a slash '/'
     //and make sure the input directory exists
@@ -1257,75 +1257,21 @@ void pdsi::SCMonthlyPDSI() {
         }
     }
 } //end of SCMonthlyPDSI()
-//-----------------------------------------------------------------------------
-// This function reads in a years worth of data from file In and places those
-// values in array A.  It's been modified to average the input data to the
-// correct time scale.  Because of this modification, it only works for
-// temperature data; precip data must be summed, not averaged.
-//-----------------------------------------------------------------------------
-int pdsi::GetTemp(FILE * In, number * A, int max) {
-    float t[52], t2[52], temp;
-    int i, j, year, read, bad_weeks;
-    char line[4096];
-    char letter;
 
-    for (i = 0; i < 52; i++)
-        A[i] = 0;
+/**
+ * This function reads in a years worth of Precip, Temp or PET data from file 
+ * \code{In} and places those values in array A. 
+ * It's been modified to aggregate the input data to the correct time scale. 
+ * Only temperature data is averaged, others are sumed.
 
-    fgets(line, 4096, In);
-    read = sscanf(line, "%d %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", & year, & t[0], & t[1], & t[2], & t[3], & t[4], & t[5], & t[6], & t[7], & t[8], & t[9], & t[10], & t[11], & t[12], & t[13], & t[14], & t[15], & t[16], & t[17], & t[18], & t[19], & t[20], & t[21], & t[22], & t[23], & t[24], & t[25], & t[26], & t[27], & t[28], & t[29], & t[30], & t[31], & t[32], & t[33], & t[34], & t[35], & t[36], & t[37], & t[38], & t[39], & t[40], & t[41], & t[42], & t[43], & t[44], & t[45], & t[46], & t[47], & t[48], & t[49], & t[50], & t[51]);
-
-    //place values read into array t2 to be summarized
-    if (read == max + 1) {
-        //a full year's worth of data was read
-        for (i = 0; i < max; i++)
-            t2[i] = t[i];
-    } else {
-        //check to see if it is the end of file
-        if ((letter = fgetc(In)) != EOF) {
-            //it's not the end of the file
-            //so place partial year's data at end of array
-            for (i = 0; i < max - (read - 1); i++)
-                t2[i] = MISSING;
-            for (i; i < max; i++)
-                t2[i] = t[i - (max - read + 1)];
-            ungetc(letter, In);
-        } else {
-            //it's the end of the file, place partial year's data
-            //at beginning on array
-            for (i = 0; i < read - 1; i++)
-                t2[i] = t[i];
-            for (i; i < max; i++)
-                t2[i] = MISSING;
-        }
-    }
-    for (i = 0; i < num_of_periods; i++) {
-        bad_weeks = 0;
-        temp = 0;
-        for (j = 0; j < period_length; j++) {
-            if (t2[i * period_length + j] != MISSING)
-                temp += t2[i * period_length + j];
-            else
-                bad_weeks++;
-        }
-        if (bad_weeks < period_length)
-            A[i] = temp / (period_length - bad_weeks);
-        else
-            A[i] = MISSING;
-    }
-    if (metric) {
-        for (i = 0; i < num_of_periods; i++) {
-            if (A[i] != MISSING)
-                A[i] = A[i] * (9.0 / 5.0) + 32;
-        }
-    }
-
-    return year;
-}
-//-----------------------------------------------------------------------------
-// This function is a modified version of GetTemp() function for precip only.
-//-----------------------------------------------------------------------------
-int pdsi::GetPrecip(FILE * In, number * A, int max) {
+ * 
+ * @param  In    File object
+ * @param  A     The array to store the read data.
+ * @param  max   The max entries to read
+ * @param  dtype input variable type, "temp", "precip" or others.
+ * @return year  Corresponding year
+ */
+int pdsi::GetData(FILE * In, number * A, int max, const char * dtype = "") {
     float t[52], t2[52], temp;
     int i, j, year, read, bad_weeks;
     char line[4096];
@@ -1362,6 +1308,9 @@ int pdsi::GetPrecip(FILE * In, number * A, int max) {
         }
     }
     //now summaraize data in t2 into A
+    bool isTemp   = strcmp(dtype, "temp") == 0; // only temp is average, other sum
+    bool isPrecip = strcmp(dtype, "precip") == 0;
+    
     for (i = 0; i < num_of_periods; i++) {
         bad_weeks = 0;
         temp = 0;
@@ -1371,18 +1320,30 @@ int pdsi::GetPrecip(FILE * In, number * A, int max) {
             else
                 bad_weeks++;
         }
-        if (bad_weeks < period_length)
+        if (bad_weeks < period_length){
+            if (isTemp) temp /= (period_length - bad_weeks);
             A[i] = temp;
-        else
+        } else {
             A[i] = MISSING;
-    }
-    if (metric) {
-        for (i = 0; i < num_of_periods; i++) {
-            if (A[i] != MISSING)
-                A[i] = A[i] / 25.4;
         }
     }
-
+    
+    if (metric) {
+        double scale = 1.0, offset = 0.0;
+        if (isPrecip){
+            scale = 1.0/25.4;
+        } else if (isTemp){
+            scale = 9.0/5.0;
+            offset = 32.0;
+        }
+        for (i = 0; i < num_of_periods; i++) {
+            if (A[i] != MISSING){
+                A[i] = A[i]*scale + offset;
+                // A[i] = A[i] / 25.4;             // prcp
+                // A[i] = A[i] * (9.0 / 5.0) + 32; // temperature
+            }
+        }
+    }
     return year;
 }
 
@@ -1494,6 +1455,8 @@ void pdsi::CalcWkPE(int period, int year) {
     PE = PE * period_length * 7;
 }
 
+void pdsi::CalcPET(){
+}
 void pdsi::CalcMonPE(int month, int year) {
     number Phi[] = {-.3865982, -.2316132, -.0378180, .1715539, .3458803, .4308320, .3916645, .2452467, .0535511, -.15583436, -.3340551, -.4310691 };
     //these values of Phi[] come directly from the fortran program.
@@ -1527,9 +1490,7 @@ void pdsi::CalcMonPE(int month, int year) {
     */
     //this calculation has been updated to accurately follow leap years
     if (month == 1) {
-        if (year % 400 == 0)
-            PE = PE * 29;
-        else if (year % 4 == 0 && year % 100 != 0)
+        if (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0))
             PE = PE * 29;
         else
             PE = PE * 28;
@@ -1545,7 +1506,7 @@ void pdsi::CalcMonPE(int month, int year) {
 //-----------------------------------------------------------------------------
 number pdsi::CalcWkThornI() {
     number I = 0;
-    int i = 0, j = 0;
+    int i = 0;
     float t[53];
     FILE * fin;
     char filename[150];
@@ -1625,7 +1586,7 @@ number pdsi::CalcWkThornI() {
 //-----------------------------------------------------------------------------
 number pdsi::CalcMonThornI() {
     number I = 0;
-    int i = 0, j = 0;
+    int i = 0;
     float t[13];
     FILE * fin;
     char filename[150];
@@ -1895,10 +1856,10 @@ void pdsi::CalcOrigK() {
         } else {
             //write column headers
             if (Weekly) {
-                fprintf(table, "YEAR  WEEK      Z     %Prob     ");
+                fprintf(table, "YEAR  WEEK      Z     %%Prob     ");
                 fprintf(table, "X1       X2      X3\n");
             } else {
-                fprintf(table, "YEAR  MONTH     Z     %Prob     ");
+                fprintf(table, "YEAR  MONTH     Z     %%Prob     ");
                 fprintf(table, "X1       X2      X3\n");
             }
         }
@@ -2082,10 +2043,10 @@ void pdsi::CalcX() {
         } else {
             // writes the column headers to bigTable.tbl if needed
             if (Weekly) {
-                fprintf(table, "YEAR  WEEK      Z     %Prob     ");
+                fprintf(table, "YEAR  WEEK      Z     %%Prob     ");
                 fprintf(table, "X1       X2      X3\n");
             } else {
-                fprintf(table, "YEAR  MONTH     Z     %Prob     ");
+                fprintf(table, "YEAR  MONTH     Z     %%Prob     ");
                 fprintf(table, "X1       X2      X3\n");
             }
         }
@@ -2346,19 +2307,17 @@ void pdsi::SumAll() {
         exit(1);
     }
 
+    int nPERIOD = (Weekly) ? 52 : 12; // weekly or monthly
     // This loop runs to read in and calculate the values for all years
     for (int year = 1; year <= totalyears; year++) {
         // Get a year's worth of temperature and precipitation data
         // Also, get the current year from the temperature file.
 
-        if (Weekly) {
-            actyear = GetTemp(input_temp, T, 52);
-            GetPrecip(input_prec, P, 52);
-        } else {
-            actyear = GetTemp(input_temp, T, 12);
-            GetPrecip(input_prec, P, 12);
-        }
-
+//        actyear = GetTemp(input_temp, T, nPERIOD);
+//         GetPrecip(input_prec, P, nPERIOD);
+        actyear = GetData(input_temp, T, nPERIOD, "temp");
+        GetData(input_prec, P, nPERIOD, "precip");
+    
         // This loop runs for each per in the year
         for (int per = 0; per < num_of_periods; per++) {
             if (P[per] >= 0 && T[per] != MISSING) {
@@ -2533,8 +2492,10 @@ void pdsi::CalcCMI() {
         // Get a year's worth of temperature and precipitation data
         // Also, get the current year from the temperature file.
 
-        actyear = GetTemp(input_temp, T, 52);
-        GetPrecip(input_prec, P, 52);
+//      actyear = GetTemp(input_temp, T, 52);
+//      GetPrecip(input_prec, P, 52);
+        actyear = GetData(input_temp, T, 52, "temp");
+        GetData(input_prec, P, 52, "precip");
 
         // This loop runs for each per in the year
         for (int per = 0; per < num_of_periods; per++) {
@@ -2673,8 +2634,8 @@ void pdsi::CalcActual(int per) {
         }
     } // End of if(P[per] >= PE)
     else {
-        // The evapotranspiration is greater than the precipitation received.  This
-        // means some moisture loss will occur from the soil.
+        // The evapotranspiration is greater than the precipitation received.
+    	// This means some moisture loss will occur from the soil.
         if (Ss > (PE - P[per])) {
             // The moisture from the top layer is enough to meet the remaining PE so
             // only the top layer losses moisture.
@@ -3503,7 +3464,7 @@ number pdsi::get_Z_sum(int length, int sign) {
 void pdsi::LeastSquares(int * x, number * y, int n, int sign, number & slope, number & intercept) {
     number sumX, sumX2, sumY, sumY2, sumXY;
     number SSX, SSY, SSXY;
-    number xbar, ybar;
+//    number xbar, ybar;
 
     number correlation = 0;
     number c_tol = 0.85;
@@ -3531,9 +3492,8 @@ void pdsi::LeastSquares(int * x, number * y, int n, int sign, number & slope, nu
         sumXY += this_x * this_y;
     }
 
-    xbar = sumX / n;
-    ybar = sumY / n;
-
+//    xbar = sumX / n;
+//    ybar = sumY / n;
     SSX = sumX2 - (sumX * sumX) / n;
     SSY = sumY2 - (sumY * sumY) / n;
     SSXY = sumXY - (sumX * sumY) / n;
@@ -3561,9 +3521,8 @@ void pdsi::LeastSquares(int * x, number * y, int n, int sign, number & slope, nu
         SSY = sumY2 - (sumY * sumY) / i;
         SSXY = sumXY - (sumX * sumY) / i;
 
-        xbar = sumX / i;
-        ybar = sumY / i;
-
+//        xbar = sumX / i;
+//        ybar = sumY / i;
         correlation = SSXY / (sqrt(SSX) * sqrt(SSY));
         i--;
     }
