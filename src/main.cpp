@@ -27,13 +27,13 @@ using namespace std;
 // the pdsi values.  Finally it calls write to output these values to file.
 //-----------------------------------------------------------------------------
 int main(int argc,char *argv[]) {
-	cout << "!!!Hello World!!!" << endl; // prints !!!Hello World!!!
-
-	char cCurrentPath[FILENAME_MAX];
-
-	GetCurrentDir(cCurrentPath, sizeof(cCurrentPath));
-	cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; /* not really required */
-	printf ("The current working directory is %s\n", cCurrentPath);
+//  cout << "!!!Hello World!!!" << endl; // prints !!!Hello World!!!
+//
+//	char cCurrentPath[FILENAME_MAX];
+//
+//	GetCurrentDir(cCurrentPath, sizeof(cCurrentPath));
+//	cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; /* not really required */
+//	printf ("The current working directory is %s\n", cCurrentPath);
 
 	pdsi PDSI;
 	PDSI.set_flags(argc, argv); // Sets the flags of PDSI

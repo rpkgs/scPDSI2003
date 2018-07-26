@@ -386,6 +386,10 @@ void pdsi::set_flags(int num_flags, char * flags[]) {
                         // the help flag.
                         if (strcmp(flags[i], "--help") == 0) {
                             printf("pdsi <flags> <Total Years>\n");
+                            printf("  -i  The directory of input data.");
+                            printf("It must be in the form of: -iInputDir/sub/\n");
+                            printf("  -o  The directory of output data. ");
+                            printf("It must be in the form of: -oOnputDir/sub/\n");
                             printf("  -b  Causes pdsi to reproduce the bug found in ");
                             printf("the FORTRAN program\n");
                             printf("  -v  Verbose mode outputs all text to the screen that ");
