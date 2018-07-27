@@ -1225,6 +1225,7 @@ int pdsi::GetData(FILE * In, number * A, int max, const char * dtype = "") {
     char line[4096];
     char letter;
 
+    if (In == NULL) return year;
     for (i = 0; i < 52; i++)
         A[i] = 0;
 
@@ -2140,8 +2141,8 @@ void pdsi::CalcOneX(FILE * table, int period_number, int year) {
 //-----------------------------------------------------------------------------
 void pdsi::SumAll() {
     FILE * fout;
-    FILE * input_temp, * input_prec;
-    char Temp[150], Precip[150];
+    FILE * input_temp, * input_prec, *fid_PET;
+    char Temp[150], Precip[150], file_PET[150];
     int actyear;
     number DEP = 0;
     SD = 0;
@@ -2170,30 +2171,28 @@ void pdsi::SumAll() {
         exit(1);
     }
 
-    if (Weekly) {
-        sprintf(Temp, "%s%s", input_dir, "weekly_T");
-        sprintf(Precip, "%s%s", input_dir, "weekly_P");
+    const char *prefix  = Weekly ? "weekly" : "monthly";
+    const char *prefix2 = Weekly ? "Week "  : "Month";
 
-        //print column headers:
-        fprintf(fout, " Year  Week        P         PE         PR         PRO");
-        fprintf(fout, "        PL        P-PE \n");
-    } else if (Monthly || SCMonthly) {
+    sprintf(Temp    , "%s%s%s", input_dir, prefix, "_T");
+	sprintf(Precip  , "%s%s%s", input_dir, prefix, "_P");
+	sprintf(file_PET, "%s%s%s", input_dir, prefix, "_PET");
 
-        sprintf(Temp, "%s%s", input_dir, "monthly_T");
-        sprintf(Precip, "%s%s", input_dir, "monthly_P");
+	//print column headers:
+	fprintf(fout, " Year  %s       P         PE         PR         PRO", prefix2);
+	fprintf(fout, "        PL        P-PE \n");
 
-        //print column headers:
-        fprintf(fout, " Year  MONTH       P         PE         PR         PRO");
-        fprintf(fout, "        PL        P-PE \n");
-    } else {
+    if (!(Weekly || (Monthly || SCMonthly))) {
         if (verbose) {
             printf("Error.  Invalid type of PDSI calculation\n");
             printf("Either the 'Weekly', 'Monthly', or 'SCMonthly' flags must be set.\n");
         }
         exit(1);
     }
+
     input_temp = file_open(Temp);
     input_prec = file_open(Precip);
+    fid_PET    = file_open(file_PET, false);
 
     int nPERIOD = (Weekly) ? 52 : 12; // weekly or monthly
     // This loop runs to read in and calculate the values for all years
@@ -2203,17 +2202,21 @@ void pdsi::SumAll() {
 
         actyear = GetData(input_temp, T, nPERIOD, "temp");
         GetData(input_prec, P, nPERIOD, "precip");
-//        GetData(input_pet , PET, nPERIOD, "PET");
+        GetData(fid_PET , PET, nPERIOD, "PET");
 
         // This loop runs for each per in the year
         for (int per = 0; per < num_of_periods; per++) {
             if (P[per] >= 0 && T[per] != MISSING) {
                 // calculate the Potential Evapotranspiration first
                 // because it's needed in later calculations
-                if (Weekly)
-                    CalcWkPE(per, actyear);
-                else
-                    CalcMonPE(per, actyear);
+            	if (fid_PET != NULL){
+            		PE = PET[per];
+            	} else{
+                    if (Weekly)
+                        CalcWkPE(per, actyear);
+                    else
+                        CalcMonPE(per, actyear);
+            	}
                 // If need to replace PET with penman_PET, just add a PET data
                 // input file here. Dong, 20180512
 

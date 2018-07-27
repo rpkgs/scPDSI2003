@@ -1,17 +1,28 @@
-
-## scPDSI
-
-This repository is trying to replace ET module with Penman Evapotranspiration.   
-Finally, it will be merged into a R package.
-
+## Penman scPDSI
 
 This project didn't modified any sub function in original `scPDSCI.cpp`, except 
-ET module. The result is exactly same as the original ones. 
+ET module. This repository is trying to replace ET module with Penman 
+Evapotranspiration. The result is exactly same as the original ones. 
 
-Linux `diff` is used to check the difference of the two version.  
+Linux `diff` is used to make sure the result of original version and this one is exactly the same. 
+
 ```bash
-diff -r scPDSI\data scPDSI-org\data > diff.txt & subl diff.txt
+Debug\scPDSI.exe -idata\example -odata potentials & diff -r data ..\scPDSI-org\data > diff.txt & subl diff.txt
 ```
+
+### Updates
+- 27 July, 2018 (ET module works now)  
+    --------- 
+    If you need `scPDSI_penman`, just put `weekly_PET` or 
+    `monthly_PET`in the input directory. `weekly_PET`(`monthly_PET`) is in the same
+    unit and format as `weekly_P` (`monthly_P`). When having no `PET` input, the result
+    is the same as original.
+
+    I only checked the weekly outputs with the original one. Using original `PET` 
+    from `potentials` file as `weekly_PET` input, 1 and 2 week output are exactly 
+    same as original. For other scales, the difference may be due to that, 
+    when saving `PET` into txt, the accuracy is loss in some extent. This need 
+    to further check in the future.
 
 
 ### Setup Project environment
@@ -19,7 +30,6 @@ diff -r scPDSI\data scPDSI-org\data > diff.txt & subl diff.txt
 1. Download [Eclipse IDE for C/C++ Developers](https://www.eclipse.org/downloads/packages/). **Make sure Eclipse path has no special characters**. 
 2. Install [Rtools](https://cran.r-project.org/bin/windows/Rtools/). 
 3. Now you can run this project in Eclipse.
-
 
 
 ---

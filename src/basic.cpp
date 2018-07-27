@@ -176,8 +176,9 @@ void check_dir(char * path){
 
 FILE * file_open(const char *_Filename, bool null_exit){
 	FILE *fid = fopen(_Filename, "r");
+	const char *prefix = null_exit ? "Error" : "Warning";
 	if (fid == NULL){
-		printf("Error reading file = %s\n", _Filename);
+		printf("%s reading file = %s\n", prefix, _Filename);
 		if (null_exit) exit(1);
 	}
 	return fid;

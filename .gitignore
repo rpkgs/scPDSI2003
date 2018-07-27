@@ -27,7 +27,6 @@
 *.lib
 
 # Executables
-*.exe
 *.out
 *.app
 
@@ -36,4 +35,3 @@ weekly
 monthly
 *.xml
 /Debug/
-/Release/
