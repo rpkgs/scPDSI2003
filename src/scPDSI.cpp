@@ -597,22 +597,8 @@ void pdsi::set_flags(int num_flags, char * flags[]) {
     // check input_dir and output_dir for correct format
     //make sure last character is a slash '/'
     //and make sure the input directory exists
-    if (strlen(input_dir) > 1) {
-        if (input_dir[strlen(input_dir) - 1] != '/')
-            strcat(input_dir, "/");
-        if (dir_exists(input_dir) == -1) {
-            if (verbose)
-                printf("Input directory does not exist: %s\n\n", input_dir);
-            exit(1);
-        }
-    } else
-        strcpy(input_dir, "./");
-
-    if (strlen(output_dir) > 1) {
-        if (output_dir[strlen(output_dir) - 1] != '/')
-            strcat(output_dir, "/");
-    } else
-        strcpy(output_dir, "./");
+    check_dir(input_dir);
+    check_dir(output_dir);
 
     if (verbose > 1) {
         printf("Input Directory is:  %s\n", input_dir);
@@ -633,14 +619,9 @@ void pdsi::set_flags(int num_flags, char * flags[]) {
     if ((scn = fopen(filename, "r")) == NULL) {
         if (verbose > 1)
             printf("Error opening %s... trying for %smonthly_T\n", filename, input_dir);
-        if (strlen(input_dir) > 1) {
-            strcpy(filename, input_dir);
-            strcat(filename, "monthly_T");
-        } else
-            strcpy(filename, "monthly_T");
 
-        strcpy(filename, input_dir);
-        strcat(filename, "monthly_T");
+        sprintf(filename, "%s%s", input_dir, "monthly_T");
+
         if ((scn = fopen(filename, "r")) == NULL) {
             printf("error opening file to get startyear\n");
             printf("tried both %sweekly_T and %s\n", input_dir, filename);
@@ -809,16 +790,8 @@ void pdsi::WeeklyCMI() {
     // must be called after the variable period_length is determined in the
     // set_flags function
 
-    if (strlen(input_dir) > 1)
-        strcpy(filename, input_dir);
-    else
-        strcpy(filename, "./");
-    strcat(filename, "parameter");
-    if ((param = fopen(filename, "r")) == NULL) {
-        printf("Unable to open parameter file.\n");
-        printf("File name: %s\n", filename);
-        exit(1);
-    }
+    sprintf(filename, "%s%s", input_dir, "parameter");
+    param = file_open(filename);
     GetParam(param);
     fclose(param);
 
@@ -877,16 +850,8 @@ void pdsi::WeeklyPDSI() {
     // must be called after the variable period_length is determined in the
     // set_flags function
 
-    if (strlen(input_dir) > 1)
-        strcpy(filename, input_dir);
-    else
-        strcpy(filename, "./");
-    strcat(filename, "parameter");
-    if ((param = fopen(filename, "r")) == NULL) {
-        printf("Unable to open parameter file.\n");
-        printf("File name: %s\n", filename);
-        exit(1);
-    }
+    sprintf(filename, "%s%s", input_dir, "parameter");
+    param = file_open(filename);
     GetParam(param);
     fclose(param);
 
@@ -1053,16 +1018,8 @@ void pdsi::MonthlyPDSI() {
     // must be called after the variable period_length is determined in the
     // set_flags function
 
-    if (strlen(input_dir) > 1)
-        strcpy(filename, input_dir);
-    else
-        strcpy(filename, "./");
-    strcat(filename, "parameter");
-    if ((param = fopen(filename, "r")) == NULL) {
-        printf("Unable to open parameter file.\n");
-        printf("File name: %s\n", filename);
-        exit(1);
-    }
+    sprintf(filename, "%s%s", input_dir, "parameter");
+	param = file_open(filename);
     GetParam(param);
     fclose(param);
 
@@ -1158,19 +1115,10 @@ void pdsi::SCMonthlyPDSI() {
     // must be called after the variable period_length is determined in the
     // set_flags function
 
-    if (strlen(input_dir) > 1)
-        strcpy(filename, input_dir);
-    else
-        strcpy(filename, "./");
-    strcat(filename, "parameter");
-    if ((param = fopen(filename, "r")) == NULL) {
-        printf("Unable to open parameter file.\n");
-        printf("File name: %s\n", filename);
-        exit(1);
-    }
-    GetParam(param);
-    fclose(param);
-
+    sprintf(filename, "%s%s", input_dir, "parameter");
+	param = file_open(filename);
+	GetParam(param);
+	fclose(param);
     // Output seen only in maximum verbose mode
     if (verbose > 1)
         printf("processing station 1\n");
@@ -1510,29 +1458,17 @@ number pdsi::CalcWkThornI() {
     float t[53];
     FILE * fin;
     char filename[150];
-    if (strlen(input_dir) > 1) {
-        strcpy(filename, input_dir);
-        strcat(filename, "wk_T_normal");
-    } else
-        strcpy(filename, "wk_T_normal");
-
+    sprintf(filename, "%s%s", input_dir, "wk_T_normal");
+    
     // The file containing the normal temperatures is opened for reading.
     if ((fin = fopen(filename, "r")) == NULL) {
         if (verbose > 1) {
             printf("Warning:  Failed opening file for normal temperatures.\n");
             printf("          filename: %s\n", filename);
         }
-        if (strlen(input_dir) > 1)
-            sprintf(filename, "%s%s", input_dir, "T_normal");
-        else
-            strcpy(filename, "T_normal");
-        if ((fin = fopen(filename, "r")) == NULL) {
-            if (verbose > 0) {
-                printf("Fatal Error: Failed to open file for normal temperatures.\n");
-                printf("             filename: %s\n", filename);
-            }
-            exit(0);
-        }
+
+        sprintf(filename, "%s%s", input_dir, "T_normal");    
+        fin = file_open(filename);
     }
 
     // The weekly temperatures are read in to a temparary array.
@@ -1590,27 +1526,16 @@ number pdsi::CalcMonThornI() {
     float t[13];
     FILE * fin;
     char filename[150];
-    if (strlen(input_dir) > 1) {
-        sprintf(filename, "%s%s", input_dir, "mon_T_normal");
-    } else
-        strcpy(filename, "mon_T_normal");
+    sprintf(filename, "%s%s", input_dir, "mon_T_normal");
     // The file containing the normal temperatures is opened for reading.
     if ((fin = fopen(filename, "r")) == NULL) {
         if (verbose > 1) {
             printf("Warning:  Failed opening file for normal temperatures.\n");
             printf("          filename: %s\n", filename);
         }
-        if (strlen(input_dir) > 1)
-            sprintf(filename, "%s%s", input_dir, "T_normal");
-        else
-            strcpy(filename, "T_normal");
-        if ((fin = fopen(filename, "r")) == NULL) {
-            if (verbose > 0) {
-                printf("Fatal Error: Failed to open file for normal temperatures.\n");
-                printf("             filename: %s\n", filename);
-            }
-            exit(0);
-        }
+        
+        sprintf(filename, "%s%s", input_dir, "T_normal");
+        fin = file_open(filename);
     }
 
     // The monthly temperatures are read in to a temparary array.
@@ -2246,59 +2171,20 @@ void pdsi::SumAll() {
     }
 
     if (Weekly) {
-        if (strlen(input_dir) > 1) {
-            sprintf(Temp, "%s%s", input_dir, "weekly_T");
-            sprintf(Precip, "%s%s", input_dir, "weekly_P");
-        } else {
-            strcpy(Temp, "weekly_T");
-            strcpy(Precip, "weekly_P");
-        }
+        sprintf(Temp, "%s%s", input_dir, "weekly_T");
+        sprintf(Precip, "%s%s", input_dir, "weekly_P");
 
-        if ((input_temp = fopen(Temp, "r")) == NULL) {
-            if (verbose > 0) {
-                printf("Error reading temperature file.\n");
-                printf("filename = %s\n", Temp);
-            }
-            exit(1);
-        }
-        if ((input_prec = fopen(Precip, "r")) == NULL) {
-            if (verbose > 0) {
-                printf("Error reading precipitation file.\n");
-                printf("filename = %s\n", Precip);
-            }
-            exit(1);
-        }
         //print column headers:
         fprintf(fout, " Year  Week        P         PE         PR         PRO");
         fprintf(fout, "        PL        P-PE \n");
     } else if (Monthly || SCMonthly) {
 
-        if (strlen(input_dir) > 1) {
-            sprintf(Temp, "%s%s", input_dir, "monthly_T");
-            sprintf(Precip, "%s%s", input_dir, "monthly_P");
-        } else {
-            strcpy(Temp, "monthly_T");
-            strcpy(Precip, "monthly_P");
-        }
+        sprintf(Temp, "%s%s", input_dir, "monthly_T");
+        sprintf(Precip, "%s%s", input_dir, "monthly_P");
 
-        if ((input_temp = fopen(Temp, "r")) == NULL) {
-            if (verbose > 0) {
-                printf("Error reading temperature file.\n");
-                printf("filename = %s\n", Temp);
-            }
-            exit(1);
-        }
-        if ((input_prec = fopen(Precip, "r")) == NULL) {
-            if (verbose > 0) {
-                printf("Error reading precipitation file.\n");
-                printf("filename = %s\n", Precip);
-            }
-            exit(1);
-        }
         //print column headers:
         fprintf(fout, " Year  MONTH       P         PE         PR         PRO");
         fprintf(fout, "        PL        P-PE \n");
-
     } else {
         if (verbose) {
             printf("Error.  Invalid type of PDSI calculation\n");
@@ -2306,6 +2192,8 @@ void pdsi::SumAll() {
         }
         exit(1);
     }
+    input_temp = file_open(Temp);
+    input_prec = file_open(Precip);
 
     int nPERIOD = (Weekly) ? 52 : 12; // weekly or monthly
     // This loop runs to read in and calculate the values for all years
@@ -2313,11 +2201,10 @@ void pdsi::SumAll() {
         // Get a year's worth of temperature and precipitation data
         // Also, get the current year from the temperature file.
 
-//        actyear = GetTemp(input_temp, T, nPERIOD);
-//         GetPrecip(input_prec, P, nPERIOD);
         actyear = GetData(input_temp, T, nPERIOD, "temp");
         GetData(input_prec, P, nPERIOD, "precip");
-    
+//        GetData(input_pet , PET, nPERIOD, "PET");
+
         // This loop runs for each per in the year
         for (int per = 0; per < num_of_periods; per++) {
             if (P[per] >= 0 && T[per] != MISSING) {
@@ -2455,30 +2342,12 @@ void pdsi::CalcCMI() {
     }
 
     // Opens the temperature and precipitation files for reading the input
-    if (strlen(input_dir) > 1) {
-        sprintf(Temp, "%s%s", input_dir, "weekly_T");
-        sprintf(Precip, "%s%s", input_dir, "weekly_P");
-    } else {
-        strcpy(Temp, "weekly_T");
-        strcpy(Precip, "weekly_P");
-    }
+    sprintf(Temp, "%s%s", input_dir, "weekly_T");
+    sprintf(Precip, "%s%s", input_dir, "weekly_P");
+    input_temp = file_open(Temp);
+    input_prec = file_open(Precip);
 
-    if ((input_temp = fopen(Temp, "r")) == NULL) {
-        if (verbose > 0) {
-            printf("Error reading temperature file.\n");
-            printf("filename = %s\n", Temp);
-        }
-        exit(1);
-    }
-    if ((input_prec = fopen(Precip, "r")) == NULL) {
-        if (verbose > 0) {
-            printf("Error reading precipitation file.\n");
-            printf("filename = %s\n", Precip);
-        }
-        exit(1);
-    }
-
-    //print column headers
+     //print column headers
     fprintf(fout, "%5s %5s %7s %7s %7s %7s %7s %7s %7s %7s %7s ",
         "year", "week", "PET", "ET", "Alpha", "R", "RO", "Ss", "Su", "M", "DE");
     fprintf(fout, "%7s %7s %7s %7s %7s\n",

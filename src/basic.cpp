@@ -6,12 +6,11 @@
  */
 
 #include <basic.h>
-
 #include <cstring>
 #include <stdlib.h>
-//#include <boost/filesystem.hpp>
-
 #include <direct.h>
+
+//#include <boost/filesystem.hpp>
 
 
 //-----------------------------------------------------------------------------
@@ -121,8 +120,8 @@ int dir_exists(char * dir) {
     remove(test_file);
     return 1;
     //---------------------------------------------------------------------------
-
 }
+
 //-----------------------------------------------------------------------------
 //The create_dir function will create all directories given in the argument
 //"path".
@@ -162,6 +161,27 @@ int create_dir(char * path) {
     return return_value;
 }
 
+void check_dir(char * path){
+    if (strlen(path) > 1) {
+        if (path[strlen(path) - 1] != '/')
+            strcat(path, "/");
+        if (dir_exists(path) == -1) {
+            // if (verbose)
+                printf("Directory does not exist: %s\n", path);
+            exit(1);
+        }
+    } else
+        strcpy(path, "./");
+}
+
+FILE * file_open(const char *_Filename, bool null_exit){
+	FILE *fid = fopen(_Filename, "r");
+	if (fid == NULL){
+		printf("Error reading file = %s\n", _Filename);
+		if (null_exit) exit(1);
+	}
+	return fid;
+}
 //std::string repeat(const std::string& input, int n) {
 //    std::ostringstream os;
 //    for(int i = 0; i < n; i++)

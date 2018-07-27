@@ -19,7 +19,8 @@ void select(number a[], int l, int r, int k);
 void exch(number &x, number &y);
 int dir_exists(char *dir);
 int create_dir(char *path);
-
+void check_dir(char * path);
+FILE * file_open(const char *_Filename, bool null_exit = true);
 //std::string repeat(const std::string& input, int n);
 
 #endif /* BASIC_H_ */
