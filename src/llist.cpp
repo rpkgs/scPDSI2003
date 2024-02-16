@@ -4,11 +4,10 @@
  *  Created on: 11 May, 2018
  *      Author: kongdd
  */
-
 #include <llist.h>
 #include <cstring>
 #include <stdlib.h>
-#include <direct.h>
+// #include <direct.h>
 #include <basic.h>
 
 #define MISSING -99.00
