@@ -3,14 +3,7 @@
  *
  *      Author: kongdd
  */
-
 #include <basic.h>
-
-#include <stdlib.h>
-#include <cstring>
-
-#include <direct.h>
-
 // #include <boost/filesystem.hpp>
 
 //-----------------------------------------------------------------------------
@@ -69,6 +62,7 @@ void exch(number &x, number &y) {
     x = y;
     y = temp;
 }
+
 //-----------------------------------------------------------------------------
 // The dir_exists function is a function used to test to see if a directory
 // exists.
@@ -157,7 +151,7 @@ int create_dir(char *path) {
         }
         i++;
     }
-
+    
     return return_value;
 }
 

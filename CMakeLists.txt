@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Project's name
-project(scPDSI)
+project(scPDSI CXX)
 
 # Set the C++ standard
 # set(CMAKE_CXX_STANDARD 14)
@@ -15,4 +15,8 @@ add_executable(${PROJECT_NAME}
   src/llist.cpp
   src/scPDSI.cpp
   src/main.cpp  
+)
+
+add_executable(check_dir 
+  src/check_dir.cpp
 )
